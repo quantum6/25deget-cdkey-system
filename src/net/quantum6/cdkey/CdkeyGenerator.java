@@ -1,3 +1,9 @@
+/**
+ * 请遵守量子开源协议(Quantum6 Open Source License)。
+ * 
+ * 作者：柳鲲鹏
+ * 
+ */
 package net.quantum6.cdkey;
 
 import java.io.IOException;
@@ -102,6 +108,11 @@ public final class CdkeyGenerator
     {
         try
         {
+            if (!CdkeyInitiator.initCdkeyKeyFile())
+            {
+                return;
+            }
+
             int product   = ProductInfo.getProductID();
             int version   = ProductInfo.getVersionID();
             int lanaguage = ProductInfo.getLanguageID();

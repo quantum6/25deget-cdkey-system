@@ -1,5 +1,8 @@
 /**
- * 版权所有 © 2018-2020 泰山信息科技有限公司。保留所有权利。
+ * 请遵守量子开源协议(Quantum6 Open Source License)。
+ * 
+ * 作者：柳鲲鹏
+ * 
  */
 
 package net.quantum6.cdkey;

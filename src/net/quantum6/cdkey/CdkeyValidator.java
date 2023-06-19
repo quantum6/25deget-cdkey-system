@@ -1,5 +1,11 @@
-package net.quantum6.cdkey;
+/**
+ * 请遵守量子开源协议(Quantum6 Open Source License)。
+ * 
+ * 作者：柳鲲鹏
+ * 
+ */
 
+package net.quantum6.cdkey;
 
 import java.security.Key;
 

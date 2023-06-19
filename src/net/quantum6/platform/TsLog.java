@@ -1,3 +1,10 @@
+/**
+ * 请遵守量子开源协议(Quantum6 Open Source License)。
+ * 
+ * 作者：柳鲲鹏
+ * 
+ */
+
 package net.quantum6.platform;
 
 import java.io.BufferedWriter;

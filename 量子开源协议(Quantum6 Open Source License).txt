@@ -1,4 +1,4 @@
-量子开源协议（Quantum OpenSource License）
+量子开源协议（Quantum Open Source License）
 
 
 无恶意原则

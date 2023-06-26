@@ -642,4 +642,33 @@ public final class CodeKit
         }
         return data;
     }
+    
+
+    private static void appendByte(StringBuffer sb, byte v)
+    {
+        int value = (v & 0xFF);
+        if (value < 0x10)
+        {
+            sb.append('0');
+        }
+        sb.append(Integer.toHexString(value));
+    }
+    
+    public static String dump(byte[] data)
+    {
+        StringBuffer sb = new StringBuffer();
+        sb.append('[');
+        appendByte(sb, data[0]);
+        for (int i=1; i<data.length; i++)
+        {
+            sb.append(", ");
+            appendByte(sb, data[i]);
+        }
+        sb.append(']');
+        
+        String result = sb.toString();
+        System.out.println(result);
+        return result;
+    }
+
 }

@@ -18,7 +18,7 @@ public final class CdkeyGenerator
 {
     private static String jz10ToJz64(String jz10, int len)
     {
-        jz10 = DecimalKit.z10To64(jz10);
+        jz10 = DecimalKit.jz10ToJz64(jz10);
         while (jz10.length() < len)
         {
             jz10 = DecimalKit.DECIMAL_DIGIT_64[0] + jz10;
@@ -79,7 +79,7 @@ public final class CdkeyGenerator
             return null;
         }
 
-        DecimalKit.changeOrder(encryptedBytes);
+        DecimalKit.swapHalf(encryptedBytes);
         String encrypted32   = DecimalKit.jz256ToJz34(encryptedBytes);
         
         int i = 0;
@@ -117,7 +117,7 @@ public final class CdkeyGenerator
             int version   = ProductInfo.getVersionID();
             int lanaguage = ProductInfo.getLanguageID();
             System.out.println("product="+product+", version="+version+", lanaguage="+lanaguage);
-            for (int i=1; i<2; i++)
+            for (int i=1; i<10; i++)
             {
                 String cdkey = generate(i, product, version, lanaguage);
                 if (cdkey == null)

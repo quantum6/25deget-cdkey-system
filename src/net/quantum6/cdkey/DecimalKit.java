@@ -9,6 +9,8 @@ package net.quantum6.cdkey;
 
 import java.math.BigInteger;
 
+import net.quantum6.platform.TsLog;
+
 final class DecimalKit
 {
     final static char[]  DECIMAL_DIGIT_34 = {
@@ -32,30 +34,71 @@ final class DecimalKit
     private static final BigInteger JZ_34  = new BigInteger(String.valueOf(DECIMAL_DIGIT_34.length));
     private final static BigInteger JZ_64  = new BigInteger(String.valueOf(DECIMAL_DIGIT_64.length));
 
-    /** Creates new ZGetString */
     private DecimalKit()
     {
     }
 
+    private static BigInteger divideInteger(byte[] dst, int i, BigInteger integerSrc, BigInteger jz)
+    {
+        //256的整数倍
+        BigInteger integer256 = integerSrc.divide(jz);
+        
+        // 如果是0，说明剩下最后一位了。
+        if (integer256.compareTo(BigInteger.ZERO) == 0)
+        {
+            dst[i] = integerSrc.byteValue();
+            return null;
+        }
+        
+        // 余数
+        dst[i] = integerSrc.subtract(integer256.multiply(jz)).byteValue();
+        
+        // 为下次循环使用。
+        integerSrc = integer256;
 
+        return integerSrc;
+    }
+    
+    private static BigInteger multiIntgeger(BigInteger integerDst, byte v, BigInteger jz)
+    {
+        integerDst = integerDst.multiply(jz);
+        integerDst = integerDst.add(new BigInteger(String.valueOf(v & 0xFF)));
+        return integerDst;
+    }
+    
+    private static void byteToJz(byte[] dst, char[] jz)
+    {
+        for (int i=0; i<dst.length; i++)
+        {
+            for (int j=0; j<jz.length; j++)
+            {
+                if (dst[i] == jz[j])
+                {
+                    dst[i] = (byte)j;
+                }
+            }
+        }
+    }
+    
+    /**
+     * 高字节是高位。
+     */
     static String jz256ToJz34(byte[] byte256)
     {
-        BigInteger data = new BigInteger("0");
-        for (int i=0; i<byte256.length; i++)
+        BigInteger keyInteger = new BigInteger("0");
+        for (int i=byte256.length-1; i>=0; i--)
         {
-            data = data.multiply(JZ_256);
-            data = data.add(new BigInteger(String.valueOf(byte256[i] & 0xFF)));
+            keyInteger = multiIntgeger(keyInteger, byte256[i], JZ_256);
         }
 
         byte[] byte34 = new byte[25];
-        for (int i=0; i<byte34.length; i++)
+        for (int i=byte34.length-1; i>=0; i--)
         {
-            BigInteger data2 = data.divide(JZ_34);
-            data2 = data2.multiply(JZ_34);
-            data = data.subtract(data2);
-            byte34[i] = data.byteValue();
-            
-            data = data2.divide(JZ_34);
+            keyInteger = divideInteger(byte34, i, keyInteger, JZ_34);
+            if (keyInteger == null)
+            {
+                break;
+            }
         }
         
         for (int i=0; i<byte34.length; i++)
@@ -66,35 +109,29 @@ final class DecimalKit
         return new String(byte34);
     }
 
+    /**
+     * 与jz256ToJz34对应：
+     * 循环方式的差异。
+     * 此处的乘除，对应前面的除乘
+     */
     static byte[] jz34ToJz256(byte[] byte34, final boolean secondTime)
     {
+        byteToJz(byte34, DECIMAL_DIGIT_34);
+        
+        BigInteger keyInteger = new BigInteger(secondTime ? "1" : "0");
         for (int i=0; i<byte34.length; i++)
         {
-            for (int j=0; j<DECIMAL_DIGIT_34.length; j++)
-            {
-                if (byte34[i] == DECIMAL_DIGIT_34[j])
-                {
-                    byte34[i] = (byte)j;
-                }
-            }
+            keyInteger = multiIntgeger(keyInteger, byte34[i], JZ_34);
         }
-        
-        BigInteger data = new BigInteger(secondTime ? "1" : "0");
-        for (int i=byte34.length-1; i>=0; i--)
-        {
-            data = data.multiply(JZ_34);
-            data = data.add(new BigInteger(String.valueOf(byte34[i] & 0xFF)));
-        }
-        
+
         byte[] byte256 = new byte[16];
-        for (int i=byte256.length-1; i>=0; i--)
+        for (int i=0; i<byte256.length; i++)
         {
-            BigInteger data2 = data.divide(JZ_256);
-            data2 = data2.multiply(JZ_256);
-            data = data.subtract(data2);
-            byte256[i] = data.byteValue();
-            
-            data = data2.divide(JZ_256);
+            keyInteger = divideInteger(byte256, i, keyInteger, JZ_256);
+            if (keyInteger == null)
+            {
+                break;
+            }
         }
 
         return byte256;
@@ -103,7 +140,7 @@ final class DecimalKit
     /**
      * 十进制表达的字符串变64进制表达的字符串
      */
-    static String z10To64(String s10)
+    static String jz10ToJz64(String s10)
     {
         BigInteger bi = null;
         try
@@ -112,7 +149,7 @@ final class DecimalKit
         }
         catch(Exception e)
         {
-            net.quantum6.platform.TsLog.writeLog(e);
+            TsLog.writeLog(e);
             return "";
         }
         StringBuffer s64 = new StringBuffer();
@@ -139,14 +176,12 @@ final class DecimalKit
 
     static String jz64ToJz10(String jz64)
     {
-        int sLen = jz64.length() - 1;
         int aLen = DECIMAL_DIGIT_64.length;
         BigInteger bi0  = BigInteger.ZERO;
         BigInteger bi1 = BigInteger.ONE;
-        char tempChar;
-        for (int i = sLen; i >= 0; i--)
+        for (int i = jz64.length()-1; i >= 0; i--)
         {
-            tempChar = jz64.charAt(i);
+            char tempChar = jz64.charAt(i);
             for (int j = 1; j < aLen; j++)
             {
                 if (tempChar == DECIMAL_DIGIT_64[j])
@@ -161,9 +196,9 @@ final class DecimalKit
     }
 
     /**
-     * 为了让CDKEY更混乱，加密后的数据交换一下顺序。
+     * 为了让CDKEY更混乱，前半部分和后半部分交换一下
      */
-    static void changeOrder(byte[] data)
+    static void swapHalf(byte[] data)
     {
         int len = data.length;
         for (int i=0; i<len/4; i++)
@@ -176,5 +211,5 @@ final class DecimalKit
             data[pos2] = (byte)(~temp);
         }
     }
-
+    
 }

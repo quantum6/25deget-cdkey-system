@@ -21,7 +21,7 @@ public final class CdkeyValidator
             String cdkey34 = cdkey.replace("-", "");
 
             byte[] jz256 = DecimalKit.jz34ToJz256(cdkey34.getBytes(), secondTime);
-            DecimalKit.changeOrder(jz256);
+            DecimalKit.swapHalf(jz256);
 
             //使用DES加密一遍，看看输出。
             Cipher cipher = CipherCdkey.getDecryptCipher();
